@@ -21,6 +21,7 @@ path TEXT NOT NULL
 cur.execute('SELECT * FROM users')
 rows = cur.fetchall()
 
+# Change all this to be just clearning and re initialising buttons
 def init_shortcuts(frame):
     cur.execute('SELECT * FROM users')
     rows = cur.fetchall()
@@ -90,7 +91,7 @@ def change_packing(arg):
 def create_shortcut():
     global nameField, con, cur
     name = nameField.get()
-    cur.execute('SELECT name FROM users WHERE name = ?', name)
+    cur.execute('SELECT name FROM users WHERE name = ?', (name,)
     if cur.fetchone():
          print('Name already exists')
          change_packing('home')
@@ -104,7 +105,7 @@ def create_shortcut():
 def init_delete():
     for entry in shortFrame.winfo_children():
         print(f'assigning button {entry.cget("text")}')
-        entry.configure(text=entry.cget('text'), command=lambda: shortcut_delete(entry.cget('text')))
+        entry.configure(text=entry.cget('text'), command=lambda n=entry.cget('text'): shortcut_delete(n))
 	
 		
 def shortcut_delete(name):
