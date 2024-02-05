@@ -3,7 +3,8 @@ from tkinter import filedialog as fd
 import sqlite3 as sq
 import os as os
 
-con = sq.connect('locations.db')
+loc_path = os.path.join(os.path.dirname(__file__), 'locations.db')
+con = sq.connect(loc_path)
 print('db opened')
 cur = con.cursor()
 print('Cursor Initiated')
@@ -13,9 +14,9 @@ name TEXT NOT NULL,
 path TEXT NOT NULL	
 )
 ''')
-print('Table created')
+# print('Table created')
 
-cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
+# cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
 
 cur.execute('SELECT * FROM users')
 rows = cur.fetchall()
@@ -23,6 +24,7 @@ rows = cur.fetchall()
 def init_shortcuts(frame):
     cur.execute('SELECT * FROM users')
     rows = cur.fetchall()
+    print(f'Len rows {len(rows)}, len frame {len(shortFrame.winfo_children())}')
     
     if len(frame.winfo_children()) == 0 and len(rows) > 0:
         for i in range (0,len(rows)):
@@ -40,7 +42,7 @@ def init_shortcuts(frame):
         shortFrame.pack()
 
     elif len(frame.winfo_children()) == len(rows):
-        return
+        shortFrame.pack()
 
     elif len(frame.winfo_children()) < len(rows):
         for i in range (len(frame.winfo_children()), len(rows)):
@@ -86,23 +88,48 @@ def change_packing(arg):
 		
 		
 def create_shortcut():
-	global nameField, con, cur
-	name = nameField.get()
-	file = fd.askopenfilename()
-	print(f'{name}, {file}')
-	con.execute('INSERT INTO users (name, path) VALUES (?,?)', (name, file))
-	con.commit()
-	change_packing('home')
+    global nameField, con, cur
+    name = nameField.get()
+    cur.execute('SELECT name FROM users WHERE name = ?', name)
+    if cur.fetchone():
+         print('Name already exists')
+         change_packing('home')
+    else:
+        file = fd.askopenfilename()
+        print(f'{name}, {file}')
+        con.execute('INSERT INTO users (name, path) VALUES (?,?)', (name, file))
+        con.commit()
+        change_packing('home')
 	
 def init_delete():
-	for entry in shortFrame.winfo_children():
-		entry.configure(command=lambda: shortcut_delete(entry.cget('text')))
+    for entry in shortFrame.winfo_children():
+        print(f'assigning button {entry.cget("text")}')
+        entry.configure(text=entry.cget('text'), command=lambda: shortcut_delete(entry.cget('text')))
 	
 		
 def shortcut_delete(name):
+    print(f'NAME BEING DELETED: {name}')
     cur.execute('DELETE FROM users WHERE name = ?', (name,))
-    print('Ran')
     con.commit()
+    for widget in shortFrame.winfo_children():
+          widget.destroy()
+    cur.execute('SELECT * FROM users')
+    rows = cur.fetchall()
+    if len(rows) > 0:
+        for i in range (0,len(rows)):
+                rowid = i
+                #print(i)
+                cur.execute('SELECT * FROM users WHERE rowid = ?', (rowid+1,))
+                result = cur.fetchone()
+                #print(result)
+                if result:
+                    name = result[0]
+                    file = result[1]
+                    print(name,file)
+                    newBtn = tk.Button(shortFrame, text=name, command=lambda: os.startfile(file))
+                    newBtn.pack()
+    print('Ran')
+    
 	
 
 def delete_shortcut():
@@ -110,16 +137,12 @@ def delete_shortcut():
     rows = cur.fetchall()
     print(rows)
     print(shortFrame.winfo_children())
-    if len(rows) > 0:
-        for i in range (0,len(shortFrame.winfo_children())):
-            print(shortFrame.winfo_children()[i], rows)
-            #Fix this (command isnt right)
-            shortFrame.winfo_children()[i].configure(command=lambda: os.startfile(rows[i+1][1]))
+    
     
     change_packing('home')
 
 root = tk.Tk()
-root.geometry("200x100")
+root.geometry("200x400")
 title = tk.Label(text=f'Shortcut Manager')
 title.pack()
 shortFrame = tk.Frame(root)
