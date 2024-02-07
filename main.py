@@ -13,50 +13,31 @@ name TEXT NOT NULL,
 path TEXT NOT NULL	
 )
 ''')
-print('Table created')
 
-cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
-cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test 2', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
-
+# cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
+# cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test 2', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
+# con.commit()
 cur.execute('SELECT * FROM users')
 rows = cur.fetchall()
 
 def init_shortcuts(frame):
     cur.execute('SELECT * FROM users')
     rows = cur.fetchall()
+    print(rows)
+    print(len(rows))
 
-    if len(frame.winfo_children()) == 0 and len(rows) > 0:
-        for i in range (0,len(rows)):
-                rowid = i
-                #print(i)
-                cur.execute('SELECT * FROM users WHERE rowid = ?', (rowid+1,))
-                result = cur.fetchone()
-                #print(result)
-                if result:
-                    name = result[0]
-                    file = result[1]
-                    print(name,file)
-                    newBtn = tk.Button(shortFrame, text=name, command=lambda: os.startfile(file))
-                    newBtn.pack()
-        shortFrame.pack()
-
-    elif len(frame.winfo_children()) == len(rows):
-        return
-
-    elif len(frame.winfo_children()) < len(rows):
-        for i in range (len(frame.winfo_children()), len(rows)):
-            rowid = i
-            cur.execute('SELECT * FROM users WHERE rowid = ?', (rowid+1,))
-            result = cur.fetchone()
-            if result:
-                name = result[0]
-                file = result[1]
-                print(name,file)
-                newBtn = tk.Button(shortFrame, text=name, command=lambda: os.startfile(file))
-                newBtn.pack()
-        shortFrame.pack()
-    else:
-        pass
+    for widget in frame.winfo_children():
+      widget.destroy()
+  
+    cur.execute('SELECT * FROM users')  
+    for row in cur:
+      name = row[0]
+      file = row[1]
+      print(name,file)
+      newBtn = tk.Button(frame, text=name, command=lambda: os.startfile(file))
+      newBtn.pack()
+      frame.pack()
+        
 
 def change_packing(arg):
   global createBtn, deleteBtn, nameField, confirmBtn, newBtn
@@ -89,11 +70,16 @@ def change_packing(arg):
 def create_shortcut():
   global nameField, con, cur
   name = nameField.get()
-  file = fd.askopenfilename()
-  print(f'{name}, {file}')
-  con.execute('INSERT INTO users (name, path) VALUES (?,?)', (name, file))
-  con.commit()
-  change_packing('home')
+  cur.execute('SELECT name FROM users WHERE name = ?', (name,))
+  if cur.fetchone():
+       print('Name already exists')
+       change_packing('home')
+  else:
+      file = fd.askopenfilename()
+      print(f'{name}, {file}')
+      con.execute('INSERT INTO users (name, path) VALUES (?,?)', (name, file))
+      con.commit()
+      change_packing('home')
 
 def init_delete():
     global shortFrame
@@ -102,7 +88,9 @@ def init_delete():
 
 
 def shortcut_delete(name):
+    global shortFrame
     cur.execute('DELETE FROM users WHERE name = ?', (name,))
+    init_shortcuts(shortFrame)
     print('Ran')
     con.commit()
 
@@ -119,13 +107,10 @@ def delete_shortcut():
               file_path = next((row[1] for row in rows if row[0] == button.cget('text')), None)
               if file_path:
                     button.configure(command=lambda path=file_path: os.startfile(path))
-
-
-
     change_packing('home')
 
 root = tk.Tk()
-root.geometry("200x100")
+root.geometry("200x400")
 title = tk.Label(text=f'Shortcut Manager')
 title.pack()
 shortFrame = tk.Frame(root)
