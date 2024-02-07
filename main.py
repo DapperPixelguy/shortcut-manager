@@ -107,9 +107,6 @@ def delete_shortcut():
               file_path = next((row[1] for row in rows if row[0] == button.cget('text')), None)
               if file_path:
                     button.configure(command=lambda path=file_path: os.startfile(path))
-
-
-
     change_packing('home')
 
 root = tk.Tk()
