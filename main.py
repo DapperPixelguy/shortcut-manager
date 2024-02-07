@@ -14,9 +14,6 @@ path TEXT NOT NULL
 )
 ''')
 
-# cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
-# cur.execute('INSERT INTO users (name, path) VALUES (?,?)', ('Test 2', '"C:/Users/19gtaylor/OneDrive - Blackdown Education Partnership/Programming/accounts.txt"'))
-# con.commit()
 cur.execute('SELECT * FROM users')
 rows = cur.fetchall()
 
