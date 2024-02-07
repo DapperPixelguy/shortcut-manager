@@ -31,7 +31,7 @@ def init_shortcuts(frame):
       name = row[0]
       file = row[1]
       print(name,file)
-      newBtn = tk.Button(frame, text=name, command=lambda: os.startfile(file))
+      newBtn = tk.Button(frame, text=name, command=lambda path=file : os.startfile(path))
       newBtn.pack()
       frame.pack()
         
