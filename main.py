@@ -55,6 +55,7 @@ class ShortcutManagerApp():
   
   def change_packing(self, arg):
     if arg == 'create':
+      #[entry.pack_forget() for entry in [forget list]] <-- DO THIS
       self.createBtn.pack_forget()
       self.shortFrame.pack_forget()
       self.deleteBtn.pack_forget()
