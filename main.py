@@ -3,7 +3,7 @@ from tkinter import filedialog as fd
 import sqlite3 as sq
 import os as os
 
-
+# Compile with noconsole
 class ShortcutManagerApp():
 
   def __init__(self, root):
